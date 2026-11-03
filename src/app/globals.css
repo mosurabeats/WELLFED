@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+/*
+ * WellFed palette — 1970s health-food co-op, refined.
+ *   cream    #F5F0E6  paper
+ *   forest   #344B35  primary
+ *   orange   #D67B42  accent / action
+ *   gold     #E5B65A  highlight
+ *   charcoal #282B26  ink
+ */
+@theme {
+  --color-cream: #f5f0e6;
+  --color-cream-100: #faf7f0;
+  --color-cream-200: #ede5d5;
+  --color-cream-300: #e2d7c1;
+  --color-forest: #344b35;
+  --color-forest-700: #2a3d2b;
+  --color-forest-600: #3f5a40;
+  --color-forest-100: #dfe6dc;
+  --color-forest-50: #edf1ea;
+  --color-orange: #d67b42;
+  --color-orange-700: #b15f2b;
+  --color-orange-100: #f6e0d0;
+  --color-gold: #e5b65a;
+  --color-gold-100: #f7ead0;
+  --color-ink: #282b26;
+  --color-ink-600: #4a4e45;
+  --color-ink-400: #7b7f72;
+  --color-ink-300: #a4a597;
+  --color-tomato: #b84a3a;
+  --color-tomato-100: #f4dcd6;
+
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 0 rgba(40, 43, 38, 0.06), 0 8px 24px -12px rgba(40, 43, 38, 0.18);
+  --shadow-pop: 0 18px 50px -12px rgba(40, 43, 38, 0.35);
+}
+
+:root {
+  color-scheme: light;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+html {
+  background: var(--color-cream);
+  -webkit-tap-highlight-color: transparent;
+  text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-cream);
+  /* faint paper grain */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.17 0 0 0 0 0.15 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 100, "WONK" 0;
+  letter-spacing: -0.01em;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 70s stripe band */
+.stripes {
+  background: linear-gradient(
+    to bottom,
+    var(--color-orange) 0 33.33%,
+    var(--color-gold) 33.33% 66.66%,
+    var(--color-forest) 66.66% 100%
+  );
+}
+.stripes-h {
+  background: linear-gradient(
+    to right,
+    var(--color-orange) 0 33.33%,
+    var(--color-gold) 33.33% 66.66%,
+    var(--color-forest) 66.66% 100%
+  );
+}
+
+/* Section eyebrow, like a vintage pamphlet chapter mark */
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-orange-700);
+}
+
+/* Nutrition Facts panel */
+.facts {
+  border: 2px solid var(--color-ink);
+  background: #fffdf8;
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-sans);
+}
+.facts .rule-thick { border-top: 10px solid var(--color-ink); }
+.facts .rule-mid { border-top: 5px solid var(--color-ink); }
+.facts .rule { border-top: 1px solid var(--color-ink); }
+
+input[type="range"].slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--color-forest) var(--fill, 50%), var(--color-cream-300) var(--fill, 50%));
+  outline: none;
+}
+input[type="range"].slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--color-cream-100);
+  border: 3px solid var(--color-forest);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  cursor: grab;
+}
+input[type="range"].slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--color-cream-100);
+  border: 3px solid var(--color-forest);
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.rise { animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+.sheet-up { animation: sheet-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade { animation: fade 0.2s ease both; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.9s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .sheet-up, .fade { animation: none; }
+}
