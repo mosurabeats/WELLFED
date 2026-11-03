@@ -93,6 +93,40 @@ await page.getByText(/Replace Wednesday/).click();
 await page.getByText(/Swapped|couldn't find|No safe/).first().waitFor({ timeout: 15000 });
 await shot("10-assistant");
 
+step("flyer import: add a store, paste text (offline parser)");
+await page.goto(`${BASE}/household?tab=stores`);
+await page.getByRole("button", { name: "Add store" }).click();
+await page.getByRole("link", { name: "Import flyer" }).first().waitFor();
+await page.getByRole("link", { name: "Import flyer" }).first().click();
+await page.getByText("Step 1").waitFor();
+const openLink = page.locator("[role=dialog] a[target=_blank]");
+if (!(await openLink.getAttribute("href"))?.startsWith("https://www.hannaford.com")) errors.push("flyer link missing");
+await page.getByRole("radio", { name: /Paste text/ }).click();
+await page.locator("[role=dialog] textarea").fill("Boneless chicken thighs $1.99/lb with card\nBroccoli crowns $1.49 lb\nPaper towels 6 pk $5.99");
+await page.getByRole("button", { name: "Read text" }).click();
+await page.getByRole("button", { name: /Save 2 deals/ }).click();
+await page.getByText(/Saved 2 deals/).waitFor();
+await page.getByText(/2 deals through/).waitFor();
+
+step("flyer import: two screenshot pages (AI response mocked), replaces last import");
+await page.route("**/api/ai/flyer", async (route) => {
+  const body = route.request().postDataJSON();
+  if (!body.file?.data || body.file.mime !== "image/jpeg") return route.fulfill({ status: 400, json: { error: "bad upload" } });
+  await route.fulfill({ json: { validFrom: null, validTo: null, items: [
+    { productName: "Ground Turkey 93%", brand: null, price: 3.99, regularPrice: 5.49, packageQty: 1, packageUnit: "lb", ingredientId: "ground-turkey", loyaltyRequired: null, couponRequired: null, promoNotes: null },
+    { productName: "Broccoli Crowns", brand: null, price: 1.29, regularPrice: null, packageQty: 1, packageUnit: "lb", ingredientId: "broccoli", loyaltyRequired: null, couponRequired: null, promoNotes: null },
+  ] } });
+});
+await page.getByRole("button", { name: "Update" }).first().click();
+await page.locator("[role=dialog] input[type=file]").setInputFiles(["public/icon-512.png", "public/icon-192.png"]);
+await page.getByText("Page 2 ·").waitFor();
+await page.getByRole("button", { name: /Read 2 pages/ }).click();
+await page.getByText(/Replace 2 earlier flyer deals/).waitFor();
+await page.getByRole("button", { name: /Save 2 deals/ }).click();
+await page.getByText(/replaced 2 older/).waitFor();
+await page.unroute("**/api/ai/flyer");
+await shot("12-deals-after-flyer");
+
 step("persistence after reload");
 await page.goto(`${BASE}/plan`);
 await page.reload();

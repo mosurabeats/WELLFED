@@ -208,6 +208,8 @@ export interface Store {
   distanceKm?: number;
   source: "osm" | "user";
   preferred?: boolean;
+  /** Your store's weekly-ad link, overriding the chain default. */
+  flyerUrl?: string;
 }
 
 /**

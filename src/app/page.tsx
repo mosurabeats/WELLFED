@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, CalendarPlus, ChefHat, Tag, Users, Timer, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarPlus, ChefHat, Tag, Users, Timer, Sparkles, FileImage } from "lucide-react";
 import { useData } from "@/lib/data-context";
 import { usePlanDerived } from "@/lib/use-plan";
 import { Badge, Bar, Button, Card, Empty, Ring, SectionTitle, money } from "@/components/ui";
@@ -32,6 +32,8 @@ export default function TodayPage() {
     .filter((x) => x.ing)
     .sort((a, b) => b.d - a.d)
     .slice(0, 4);
+
+  const needFlyer = data.stores.filter((s) => !s.id.startsWith("demo-") && !data.dbPrices.some((p) => p.storeId === s.id && p.source === "flyer" && isActive(p, today)));
 
   if (!data.members.length) return <Welcome />;
 
@@ -156,6 +158,16 @@ export default function TodayPage() {
 
       {/* Deals */}
       <section>
+        {needFlyer.length > 0 && (
+          <Link href={`/groceries?tab=deals&import=${needFlyer[0].id}`} className="mb-3 flex items-center gap-3 rounded-2xl border-2 border-dashed border-orange/50 bg-orange-100/40 p-3.5">
+            <FileImage className="h-6 w-6 shrink-0 text-orange" />
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold">Import this week&apos;s {needFlyer[0].name} flyer</div>
+              <div className="text-xs text-ink-600">{needFlyer.length > 1 ? `${needFlyer.length} stores have no current flyer. ` : ""}Screenshots in, deals out. Takes about a minute.</div>
+            </div>
+            <ArrowRight className="h-4 w-4 text-ink-300" />
+          </Link>
+        )}
         <SectionTitle eyebrow="No. 3" title="Notable deals" action={<Link href="/groceries?tab=deals" className="text-sm font-semibold text-orange-700">All deals →</Link>} />
         {deals.length ? (
           <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">

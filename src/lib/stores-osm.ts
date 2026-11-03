@@ -1,31 +1,46 @@
 import type { Chain } from "./types";
 
-/** Supported chains and how to recognise them in OpenStreetMap tags. */
-export const CHAIN_INFO: Record<Chain, { label: string; pattern: RegExp; deals: string }> = {
+/**
+ * Supported chains, how to recognise them in OpenStreetMap tags, and where
+ * their weekly ad lives. flyerUrl: the retailer's own weekly-ad page (checked 2026-11). Where the
+ * site blocks automated checks, flyerUrl is the homepage and flyerExact is
+ * false — you can save your store's exact flyer link once.
+ */
+export const CHAIN_INFO: Record<Chain, { label: string; pattern: RegExp; deals: string; flyerUrl?: string; flyerExact?: boolean }> = {
   hannaford: {
     label: "Hannaford",
     pattern: /hannaford/i,
     deals: "Weekly flyer on hannaford.com (no public API). Import the flyer as an image/PDF or enter prices.",
+    flyerUrl: "https://www.hannaford.com",
+    flyerExact: false,
   },
   shaws: {
     label: "Shaw's",
     pattern: /shaw'?s/i,
     deals: "Weekly ad and digital coupons on shaws.com (Albertsons; no public API). Import the flyer or enter prices.",
+    flyerUrl: "https://www.shaws.com/weeklyad",
+    flyerExact: true,
   },
   "price-chopper": {
     label: "Price Chopper / Market 32",
     pattern: /price\s*chopper|market\s*32/i,
     deals: "Weekly flyer on pricechopper.com (no public API). Import the flyer or enter prices.",
+    flyerUrl: "https://shop.pricechopper.com/store/price-chopper-ny/flyers/view/weekly/print",
+    flyerExact: true,
   },
   walmart: {
     label: "Walmart",
     pattern: /walmart/i,
     deals: "Walmart offers an affiliate product API only to approved partners. Without one, enter prices or import a screenshot.",
+    flyerUrl: "https://www.walmart.com",
+    flyerExact: false,
   },
   aldi: {
     label: "Aldi",
     pattern: /\baldi\b/i,
     deals: "Weekly ad on aldi.us (no public API). Import the ad or enter prices.",
+    flyerUrl: "https://www.aldi.us/store/aldi/flyers/view/weekly/print",
+    flyerExact: true,
   },
   other: { label: "Other store", pattern: /$^/, deals: "Enter prices or import a flyer." },
 };
@@ -97,4 +112,11 @@ export function parseOverpass(json: { elements?: OverpassElement[] }, origin: { 
       seen.add(k);
       return true;
     });
+}
+
+/** Where to open a store's weekly ad: your saved link, else the chain's page. */
+export function flyerLink(store: { chain: Chain; flyerUrl?: string }): { url: string; exact: boolean } | null {
+  if (store.flyerUrl) return { url: store.flyerUrl, exact: true };
+  const info = CHAIN_INFO[store.chain];
+  return info.flyerUrl ? { url: info.flyerUrl, exact: !!info.flyerExact } : null;
 }

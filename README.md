@@ -123,6 +123,17 @@ I researched what each target retailer actually offers:
 
 WellFed **does not scrape** these sites or bypass logins, CAPTCHAs or bot protection, and it doesn't use undocumented flyer back-ends.
 
+### Importing a weekly flyer (about a minute per store)
+
+1. Open **Groceries → Deals**. The **This week's flyers** card shows each of your stores, how many deals it has and when they expire. Today shows a reminder when a store has no current flyer.
+2. Tap **Open** to go to the retailer's own weekly ad. Shaw's, Price Chopper/Market 32 and Aldi link straight to the ad. Hannaford and Walmart block automated link checks, so their button opens the homepage. Paste your store's exact flyer link once and it's remembered.
+3. Screenshot each page, or save it as a PDF. Then tap **Import** and either **Add pages** (up to 12) or **Paste screenshot**.
+4. WellFed shrinks photos on your phone, sends one page at a time to your AI provider, merges the pages and drops repeated items. It also picks up the valid dates when they're printed on the flyer.
+5. Review every row: fix any price, size or ingredient match and untick what you don't want. Only rows matched to a catalog ingredient are saved.
+6. Importing a newer flyer **replaces that store's earlier flyer deals** for overlapping dates (you can turn this off). Prices you typed in yourself are never replaced.
+
+Without an AI key, choose **Paste text** and the flyer text is parsed on the device.
+
 Every price carries a **source label**:
 
 - **Store price / You entered.** Typed from a shelf tag or receipt, with a timestamp.
@@ -149,15 +160,15 @@ SR Legacy has no "added sugars" field. WellFed counts pure sweeteners (sugar, br
 ## Testing
 
 ```bash
-npm test            # 63 unit tests (Vitest)
+npm test            # 66 unit tests (Vitest)
 npm run typecheck
 npm run lint
 npm run build && npm start &  npm run smoke   # end-to-end in an emulated iPhone (Playwright)
 ```
 
-The unit tests cover recipe scaling, nutrition math against USDA values, unit conversion, package rounding, cheapest package combinations, list consolidation, shared packages counted once, pantry deduction, staples, budget allocation, expired deals, missing prices (flagged, never invented), store comparison, substitutions that respect diets, allergy and diet conflicts (including hidden wheat in soy sauce), optional garnish conflicts, unverified AI ingredients, attendance changes, meal swaps, reduce-to-budget, max cook time, deal and pantry preference, and **budgets too low to meet the request** (explained, not faked). There are also tests for the flyer, assistant, recipe-import and store-lookup parsers.
+The unit tests cover recipe scaling, nutrition math against USDA values, unit conversion, package rounding, cheapest package combinations, list consolidation, shared packages counted once, pantry deduction, staples, budget allocation, expired deals, missing prices (flagged, never invented), store comparison, substitutions that respect diets, allergy and diet conflicts (including hidden wheat in soy sauce), optional garnish conflicts, unverified AI ingredients, attendance changes, meal swaps, reduce-to-budget, max cook time, deal and pantry preference, and **budgets too low to meet the request** (explained, not faked). There are also tests for the flyer, assistant, recipe-import and store-lookup parsers, merging multi-page flyers, and replacing older flyer deals.
 
-The smoke test walks through household setup with a peanut allergy, a $90 / 5-day / 2-meal plan, a swap, the list, deals, store comparison, budget, shopping mode, a recipe, the assistant, and persistence across a reload.
+The smoke test walks through household setup with a peanut allergy, a $90 / 5-day / 2-meal plan, a swap, the list, deals, store comparison, budget, shopping mode, a recipe, the assistant, flyer import (pasted text, and a two-page screenshot upload with the AI response mocked, including replacement of older deals), and persistence across a reload.
 
 ## Known limitations
 

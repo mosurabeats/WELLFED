@@ -173,3 +173,35 @@ export function parseFlyerText(text: string, ingredients: Pick<Ingredient, "id" 
   }
   return out;
 }
+
+/** Combine items read from several flyer pages, dropping exact repeats. */
+export function mergeFlyerItems(pages: FlyerItem[][]): FlyerItem[] {
+  const seen = new Set<string>();
+  const out: FlyerItem[] = [];
+  for (const page of pages) {
+    for (const item of page) {
+      const key = `${item.productName.trim().toLowerCase()}|${item.price}|${item.packageQty}|${item.packageUnit}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(item);
+    }
+  }
+  return out;
+}
+
+/**
+ * Flyer deals from the same store whose dates overlap a new flyer's dates.
+ * Importing a new week's flyer replaces these so stale or duplicate deals
+ * don't linger. Hand-entered prices are never touched.
+ */
+export function supersededFlyerIds(
+  prices: { id: string; storeId: string | null; source: string; startDate?: string; endDate?: string }[],
+  storeId: string,
+  start: string,
+  end: string,
+): string[] {
+  return prices
+    .filter((p) => p.storeId === storeId && p.source === "flyer")
+    .filter((p) => (p.startDate ?? "0000") <= end && (p.endDate ?? "9999") >= start)
+    .map((p) => p.id);
+}

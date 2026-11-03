@@ -90,3 +90,29 @@ describe("store lookup parsing", () => {
     expect(res[0].distanceKm).toBeLessThan(1);
   });
 });
+
+describe("flyer import helpers", () => {
+  it("merges pages and drops exact repeats", async () => {
+    const { mergeFlyerItems } = await import("@/lib/flyer");
+    const a = { productName: "Broccoli Crowns", price: 1.49, packageQty: 1, packageUnit: "lb" as const, ingredientId: "broccoli" };
+    const b = { productName: "Pasta", price: 1, packageQty: 16, packageUnit: "oz" as const, ingredientId: "pasta" };
+    expect(mergeFlyerItems([[a, b], [{ ...a, productName: " broccoli crowns" }]])).toHaveLength(2);
+  });
+  it("replaces only overlapping flyer deals from the same store", async () => {
+    const { supersededFlyerIds } = await import("@/lib/flyer");
+    const prices = [
+      { id: "old-week", storeId: "s1", source: "flyer", startDate: "2026-10-30", endDate: "2026-11-05" },
+      { id: "last-month", storeId: "s1", source: "flyer", startDate: "2026-10-01", endDate: "2026-10-07" },
+      { id: "typed", storeId: "s1", source: "user", startDate: "2026-11-01", endDate: "2026-11-07" },
+      { id: "other-store", storeId: "s2", source: "flyer", startDate: "2026-11-01", endDate: "2026-11-07" },
+    ];
+    expect(supersededFlyerIds(prices, "s1", "2026-11-03", "2026-11-09")).toEqual(["old-week"]);
+  });
+  it("prefers a store's saved flyer link over the chain default", async () => {
+    const { flyerLink } = await import("@/lib/stores-osm");
+    expect(flyerLink({ chain: "shaws" })).toEqual({ url: "https://www.shaws.com/weeklyad", exact: true });
+    expect(flyerLink({ chain: "hannaford" })?.exact).toBe(false);
+    expect(flyerLink({ chain: "hannaford", flyerUrl: "https://example.test/ad" })).toEqual({ url: "https://example.test/ad", exact: true });
+    expect(flyerLink({ chain: "other" })).toBeNull();
+  });
+});

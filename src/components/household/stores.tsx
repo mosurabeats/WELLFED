@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Search, Star, Trash2, Plus, Info } from "lucide-react";
+import Link from "next/link";
+import { MapPin, Search, Star, Trash2, Plus, Info, ExternalLink, FileImage } from "lucide-react";
 import type { Chain, Store } from "@/lib/types";
 import { useData } from "@/lib/data-context";
 import { deleteStore, saveStore, updateSettings } from "@/lib/db/actions";
 import { uid } from "@/lib/db/defaults";
 import { api } from "@/lib/api";
-import { CHAIN_INFO, type FoundStore } from "@/lib/stores-osm";
+import { CHAIN_INFO, flyerLink, type FoundStore } from "@/lib/stores-osm";
 import { Badge, Button, Card, Field, Input, Notice, Select, Toggle, cn } from "../ui";
 import { useToast } from "../toast";
 
@@ -129,6 +130,18 @@ export function StoreSettings() {
                 <button aria-label="Remove store" onClick={() => confirm(`Remove ${st.name} and its prices?`) && deleteStore(st.id)} className="rounded-full p-2 text-ink-300 hover:bg-tomato-100 hover:text-tomato"><Trash2 className="h-4 w-4" /></button>
               </div>
               <div className="mt-2 flex gap-1.5 text-[11.5px] leading-snug text-ink-400"><Info className="mt-px h-3.5 w-3.5 shrink-0" />{CHAIN_INFO[st.chain].deals}</div>
+              {!st.id.startsWith("demo-") && (
+                <div className="mt-2 flex gap-2 pl-10">
+                  {flyerLink(st) && (
+                    <a href={flyerLink(st)!.url} target="_blank" rel="noopener noreferrer" className="inline-flex h-8 items-center gap-1 rounded-full bg-forest-50 px-3 text-sm font-semibold text-forest">
+                      <ExternalLink className="h-3.5 w-3.5" /> {flyerLink(st)!.exact ? "Weekly flyer" : "Store site"}
+                    </a>
+                  )}
+                  <Link href={`/groceries?tab=deals&import=${st.id}`} className="inline-flex h-8 items-center gap-1 rounded-full bg-orange-100 px-3 text-sm font-semibold text-orange-700">
+                    <FileImage className="h-3.5 w-3.5" /> Import flyer
+                  </Link>
+                </div>
+              )}
             </div>
           ))}
         </div>

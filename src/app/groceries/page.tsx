@@ -15,6 +15,7 @@ import { PriceStatusBadge, CATEGORY_LABEL } from "@/components/bits";
 import { ItemSheet, packageText } from "@/components/groceries/item-sheet";
 import { FlyerImport, PriceForm } from "@/components/groceries/deal-forms";
 import { useToast } from "@/components/toast";
+import { FlyerStatus } from "@/components/groceries/flyer-status";
 
 type Tab = "list" | "deals" | "compare" | "budget";
 
@@ -138,7 +139,13 @@ function DealsTab() {
   const data = useData();
   const toast = useToast();
   const [priceOpen, setPriceOpen] = useState(false);
-  const [flyerOpen, setFlyerOpen] = useState(false);
+  const params = useSearchParams();
+  const router = useRouter();
+  const importFor = params.get("import");
+  const [flyerOpen, setFlyerOpen] = useState(!!importFor);
+  const [flyerStore, setFlyerStore] = useState<string | undefined>(importFor ?? undefined);
+  const openImport = (storeId?: string) => { setFlyerStore(storeId); setFlyerOpen(true); };
+  const closeImport = () => { setFlyerOpen(false); if (importFor) router.replace("/groceries?tab=deals", { scroll: false }); };
   const [store, setStore] = useState<string>("all");
   const [show, setShow] = useState<"deals" | "all" | "expired">("deals");
   const hasDemo = data.dbPrices.some((p) => p.source === "demo");
@@ -176,9 +183,10 @@ function DealsTab() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-2">
-        <Button onClick={() => setFlyerOpen(true)}><FileImage className="h-4 w-4" /> Import flyer</Button>
+        <Button onClick={() => openImport()}><FileImage className="h-4 w-4" /> Import flyer</Button>
         <Button variant="outline" onClick={() => setPriceOpen(true)}><Plus className="h-4 w-4" /> Add price</Button>
       </div>
+      <FlyerStatus onImport={openImport} />
       <Card className="p-4 text-[13px] leading-relaxed text-ink-600">
         <div className="mb-1 flex items-center gap-2 font-semibold text-forest"><Info className="h-4 w-4" /> Where prices come from</div>
         None of Hannaford, Shaw&apos;s, Price Chopper/Market 32 or Aldi offer a public pricing API, and Walmart&apos;s product API is limited to approved affiliates. WellFed doesn&apos;t scrape or bypass store sites. Instead: photograph or download the weekly flyer and import it (AI reads it, you confirm every item), paste the flyer text (parsed offline), or type prices from the shelf or receipt. Anything else is shown as an <b>estimate</b>.
@@ -244,7 +252,7 @@ function DealsTab() {
       </Card>
 
       <PriceForm open={priceOpen} onClose={() => setPriceOpen(false)} />
-      <FlyerImport open={flyerOpen} onClose={() => setFlyerOpen(false)} />
+      <FlyerImport open={flyerOpen} onClose={closeImport} initialStoreId={flyerStore} />
     </div>
   );
 }

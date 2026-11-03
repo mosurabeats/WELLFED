@@ -6,6 +6,7 @@ import type { MealPlan, Member, PantryItem, PlannedMeal, PlanRequest, PriceEntry
 import type { PlanContext } from "../engine/shopping";
 import { generatePlan, Planner, type PlanResult } from "../engine/planner";
 import { isoDate } from "../engine/pricing";
+import { supersededFlyerIds } from "../flyer";
 
 // ── Settings ──────────────────────────────────────────────────────
 export async function getSettings(): Promise<Settings> {
@@ -73,6 +74,21 @@ export async function savePrices(list: Omit<PriceEntry, "id">[]) {
   const now = new Date().toISOString();
   await db().prices.bulkPut(list.map((p) => ({ ...p, id: uid("price"), verifiedAt: p.verifiedAt ?? now })));
 }
+/** Save reviewed flyer deals, optionally replacing that store's overlapping flyer deals. */
+export async function importFlyerDeals(storeId: string, list: Omit<PriceEntry, "id">[], start: string, end: string, replaceOverlapping: boolean) {
+  const now = new Date().toISOString();
+  let replaced = 0;
+  await db().transaction("rw", db().prices, async () => {
+    if (replaceOverlapping) {
+      const ids = supersededFlyerIds(await db().prices.where("storeId").equals(storeId).toArray(), storeId, start, end);
+      await db().prices.bulkDelete(ids);
+      replaced = ids.length;
+    }
+    await db().prices.bulkPut(list.map((p) => ({ ...p, id: uid("price"), verifiedAt: now })));
+  });
+  return { saved: list.length, replaced };
+}
+
 export async function deletePrice(id: string) {
   await db().prices.delete(id);
 }
